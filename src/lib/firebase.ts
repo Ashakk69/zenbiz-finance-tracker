@@ -7,7 +7,7 @@ const firebaseConfig = {
   storageBucket: "zenbiz-n1t50.firebasestorage.app",
   apiKey: "AIzaSyDG4x6cv3EsnnAiOcGhF7nU0anq43hMG2M",
   authDomain: "zenbiz-n1t50.firebaseapp.com",
-  measurementId: "",
+  measurementId: "G-7V5E9W6W4S",
   messagingSenderId: "1035711621891"
 };
 
