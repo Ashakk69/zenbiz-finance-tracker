@@ -40,6 +40,8 @@ import {
 import { CurrencyProvider } from "@/context/currency-context";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FeedbackDialog } from "@/components/dashboard/feedback-dialog";
+import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -54,6 +56,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, loading, signOut } = useAuth();
   const currentPage = navItems.find((item) => item.href === pathname);
+  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   
   const handleLogout = async () => {
     await signOut();
@@ -147,7 +150,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="flex-1">
                 <h1 className="font-semibold text-lg">{currentPage?.label}</h1>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => setIsFeedbackDialogOpen(true)}>
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Feedback
               </Button>
@@ -179,6 +182,10 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarProvider>
       </div>
+      <FeedbackDialog
+        open={isFeedbackDialogOpen}
+        onOpenChange={setIsFeedbackDialogOpen}
+      />
     </div>
   );
 }
