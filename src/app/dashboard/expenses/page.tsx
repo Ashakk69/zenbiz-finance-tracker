@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { automaticExpenseCategorization } from "@/ai/flows/automatic-expense-categorization";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,9 +42,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
 import { useUserData } from "@/context/user-data-context";
-import { FilePlus2, Loader2, Sparkles, MoreVertical } from "lucide-react";
+import { FilePlus2, Loader2, Sparkles, MoreVertical, Camera, ScanLine } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { scanReceipt } from "@/ai/flows/scan-receipt-flow";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Others"];
 
@@ -155,7 +158,7 @@ export default function ExpensesPage() {
         </Card>
       </div>
       <div>
-        <AiCategorizationCard onAddTransaction={() => {}} />
+        <ReceiptScannerCard />
       </div>
     </div>
   );
@@ -221,21 +224,63 @@ function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: () => void }
   );
 }
 
-function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: any) => void }) {
-  const [text, setText] = useState("");
+function ReceiptScannerCard() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { formatCurrency } = useCurrency();
   const { addTransaction: addUserTransaction } = useUserData();
 
-  const handleCategorize = async () => {
-    if (!text.trim()) {
-      toast({ variant: "destructive", title: "Input is empty", description: "Please paste a notification text." });
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setHasCameraPermission(false);
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasCameraPermission(true);
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+        setHasCameraPermission(false);
+        toast({
+          variant: "destructive",
+          title: "Camera Access Denied",
+          description: "Please enable camera permissions in your browser settings.",
+        });
+      }
+    };
+    getCameraPermission();
+  }, [toast]);
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return null;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if(context) {
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        return canvas.toDataURL('image/jpeg');
+    }
+    return null;
+  };
+
+  const handleScanReceipt = async () => {
+    const photoDataUri = capturePhoto();
+    if (!photoDataUri) {
+      toast({ variant: "destructive", title: "Capture Failed", description: "Could not capture a photo." });
       return;
     }
     setIsLoading(true);
     try {
-      const result = await automaticExpenseCategorization({ notificationText: text });
+      const result = await scanReceipt({ photoDataUri });
       if (result.category && result.amount && result.merchant) {
         const newTransaction = {
           merchant: result.merchant,
@@ -244,20 +289,19 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: any)
         };
         await addUserTransaction(newTransaction);
         toast({
-          title: "Expense Categorized!",
+          title: "Expense Scanned!",
           description: `${result.merchant} for ${formatCurrency(result.amount)} was added to ${newTransaction.category}.`,
         });
-        setText("");
       } else {
         toast({
           variant: "destructive",
-          title: "Categorization Failed",
-          description: "Could not extract full expense details. Please add manually.",
+          title: "Scan Failed",
+          description: "Could not extract details from the receipt. Please try again or add manually.",
         });
       }
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "An Error Occurred", description: "Could not categorize the expense." });
+      toast({ variant: "destructive", title: "An Error Occurred", description: "Could not process the receipt." });
     } finally {
       setIsLoading(false);
     }
@@ -267,24 +311,38 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: any)
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="size-5 text-primary" />
-          AI Categorization
+          <Camera className="size-5 text-primary" />
+          Scan Receipt
         </CardTitle>
         <CardDescription>
-          Paste an SMS or UPI notification to categorize it automatically.
+          Use your camera to scan a receipt and add an expense automatically.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Textarea
-            placeholder={`e.g., 'Payment of ${formatCurrency(450)} to Zomato from your account...'`}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={4}
-          />
-          <Button onClick={handleCategorize} disabled={isLoading} className="w-full">
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            Categorize with AI
+          <div className="relative aspect-video w-full rounded-md border bg-muted overflow-hidden">
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+            <canvas ref={canvasRef} className="hidden" />
+            {hasCameraPermission === false && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                    <Camera className="size-10 text-muted-foreground mb-4" />
+                    <Alert variant="destructive">
+                        <AlertTitle>Camera Access Required</AlertTitle>
+                        <AlertDescription>
+                            Please allow camera access to use this feature.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+            )}
+             {hasCameraPermission === null && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            )}
+          </div>
+          <Button onClick={handleScanReceipt} disabled={isLoading || !hasCameraPermission} className="w-full">
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
+            Scan and Add Expense
           </Button>
         </div>
       </CardContent>
