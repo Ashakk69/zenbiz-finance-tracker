@@ -26,6 +26,7 @@ import {
   Loader2,
   LogOut,
   Home,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,11 +142,15 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarFooter>
           </Sidebar>
           <div className="flex flex-col flex-1">
-            <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
+            <header className="flex h-14 items-center gap-4 border-b bg-card/60 px-4 lg:h-[60px] lg:px-6 backdrop-blur-xl">
               <SidebarTrigger className="md:hidden" />
               <div className="flex-1">
                 <h1 className="font-semibold text-lg">{currentPage?.label}</h1>
               </div>
+              <Button variant="ghost" size="sm">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Feedback
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
