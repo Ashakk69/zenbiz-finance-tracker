@@ -34,7 +34,13 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const formatCurrency = (value: number) => {
     if (!isMounted) return ''; // or a loading state
-    return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-US', {
+    if (currency === 'INR') {
+        return `Rs ${new Intl.NumberFormat('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(value)}`;
+    }
+    return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'de-DE', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
@@ -44,11 +50,11 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   
   const formatCompact = (value: number) => {
     if (!isMounted) return ''; // or a loading state
-    const symbol = currency === 'INR' ? '₹' : (currency === 'USD' ? '$' : '€');
-    if (value >= 1000) {
-      return `${symbol}${Math.round(value/1000)}k`;
+    const symbol = currency === 'INR' ? 'Rs' : (currency === 'USD' ? '$' : '€');
+     if (value >= 1000) {
+      return `${symbol} ${Math.round(value/1000)}k`;
     }
-    return `${symbol}${value}`;
+    return `${symbol} ${value}`;
   }
 
   const value = {
