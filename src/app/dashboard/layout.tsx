@@ -48,33 +48,10 @@ const navItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
-function BottomNavbar() {
-  const pathname = usePathname();
-
-  return (
-    <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t">
-       <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-          {navItems.map(item => (
-             <Link
-                key={item.href}
-                href={item.href}
-                className={`inline-flex flex-col items-center justify-center px-5 hover:bg-muted ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
-              >
-                  <item.icon className="w-5 h-5 mb-1" />
-                  <span className="text-xs">{item.label}</span>
-              </Link>
-          ))}
-      </div>
-    </div>
-  );
-}
-
-
 function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading, signOut } = useAuth();
-  const isMobile = useIsMobile();
   const currentPage = navItems.find((item) => item.href === pathname);
   
   const handleLogout = async () => {
@@ -105,7 +82,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full">
       <div className="flex min-h-screen w-full">
         <SidebarProvider>
-          <Sidebar collapsible="icon" variant="floating" className="hidden md:block">
+          <Sidebar collapsible="icon" className="hidden md:block">
             <SidebarHeader>
               <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <ZenBizLogo className="size-7 text-primary" />
@@ -113,10 +90,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             </SidebarHeader>
             <SidebarContent>
-              {/* Content can go here if needed in the future */}
-            </SidebarContent>
-            <SidebarFooter>
-               <SidebarMenu className="mb-4">
+              <SidebarMenu>
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -131,6 +105,8 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter>
                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="justify-start gap-3 w-full px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
@@ -192,11 +168,10 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </header>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background/90 pb-20 md:pb-6">
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background/90 pb-6">
               {children}
             </main>
           </div>
-          {isMobile && <BottomNavbar />}
         </SidebarProvider>
       </div>
     </div>
