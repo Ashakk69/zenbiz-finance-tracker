@@ -1,18 +1,13 @@
+
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartTooltip, ChartTooltipContent, ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const chartData = [
-  { month: "January", spending: 18600 },
-  { month: "February", spending: 30500 },
-  { month: "March", spending: 23700 },
-  { month: "April", spending: 27800 },
-  { month: "May", spending: 18900 },
-  { month: "June", spending: 34120 },
-];
+import { useMemo } from "react";
+import { useUserData } from "@/context/user-data-context";
+import { format, subMonths, startOfMonth } from "date-fns";
 
 const chartConfig = {
   spending: {
@@ -22,6 +17,25 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function SpendingChart() {
+    const { transactions } = useUserData();
+
+    const chartData = useMemo(() => {
+        const now = new Date();
+        const data = Array.from({ length: 6 }).map((_, i) => {
+            const d = subMonths(now, 5 - i);
+            const month = format(d, "MMM");
+            const monthStart = startOfMonth(d);
+
+            const spending = transactions
+                .filter(t => new Date(t.date) >= monthStart && new Date(t.date) < startOfMonth(subMonths(now, 4 - i)))
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            return { month, spending };
+        });
+        return data;
+    }, [transactions]);
+
+
   return (
     <Card>
       <CardHeader>

@@ -8,13 +8,14 @@ import { FileText, Loader2 } from "lucide-react";
 import { useUserData } from "@/context/user-data-context";
 import { useCurrency } from "@/context/currency-context";
 import { format } from "date-fns";
+import { useMemo } from "react";
 
 export function RecentTransactions() {
   const { transactions, loading } = useUserData();
   const { formatCurrency } = useCurrency();
 
   // Get the 5 most recent transactions
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = useMemo(() => transactions.slice(0, 5), [transactions]);
 
   return (
     <Card>
