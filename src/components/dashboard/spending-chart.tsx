@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
 import { useUserData } from "@/context/user-data-context";
 import { format, subMonths, startOfMonth } from "date-fns";
+import { useCurrency } from "@/context/currency-context";
 
 const chartConfig = {
   spending: {
@@ -18,6 +19,7 @@ const chartConfig = {
 
 export function SpendingChart() {
     const { transactions } = useUserData();
+    const { formatCompact } = useCurrency();
 
     const chartData = useMemo(() => {
         const now = new Date();
@@ -61,7 +63,7 @@ export function SpendingChart() {
                     tickFormatter={(value) => value.slice(0, 3)}
                   />
                   <YAxis
-                    tickFormatter={(value) => `₹${Number(value) / 1000}k`}
+                    tickFormatter={(value) => formatCompact(Number(value))}
                     tickLine={false}
                     axisLine={false}
                     tickMargin={10}
