@@ -49,7 +49,7 @@ const trendConfig = {
 
 
 export default function ReportsPage() {
-  const { currency } = useCurrency();
+  const { formatCompact } = useCurrency();
   const { transactions, loading } = useUserData();
 
   const { spendingTrendData, categoryData } = useMemo(() => {
@@ -117,7 +117,7 @@ export default function ReportsPage() {
                   axisLine={false}
                 />
                 <YAxis
-                  tickFormatter={(value) => `${currency === 'INR' ? '₹' : '$'}${Number(value) / 1000}k`}
+                  tickFormatter={(value) => formatCompact(Number(value))}
                   tickLine={false}
                   axisLine={false}
                   width={80}
