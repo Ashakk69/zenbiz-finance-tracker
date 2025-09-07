@@ -80,7 +80,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen w-full">
       <div className="flex min-h-screen w-full">
         <SidebarProvider>
-          <Sidebar collapsible="icon">
+          <Sidebar collapsible="icon" variant="floating">
             <SidebarHeader>
               <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <ZenBizLogo className="size-7 text-primary" />
@@ -88,7 +88,10 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             </SidebarHeader>
             <SidebarContent>
-              <SidebarMenu>
+              {/* Content can go here if needed in the future */}
+            </SidebarContent>
+            <SidebarFooter>
+               <SidebarMenu className="mb-4">
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -103,8 +106,6 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter>
                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="justify-start gap-3 w-full px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
