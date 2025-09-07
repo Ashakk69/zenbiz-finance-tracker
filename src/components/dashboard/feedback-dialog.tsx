@@ -34,7 +34,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Send } from "lucide-react";
-import { sendFeedback, FeedbackInputSchema } from "@/ai/flows/send-feedback-flow";
+import { sendFeedback } from "@/ai/flows/send-feedback-flow";
+
+const FeedbackInputSchema = z.object({
+  feedbackType: z.string().describe('The type of feedback (e.g., Bug, Feature Request, General).'),
+  message: z.string().min(10, 'Feedback message must be at least 10 characters.').describe('The user\'s feedback message.'),
+  email: z.string().email().optional().describe('The user\'s email address (optional).'),
+});
 
 type FeedbackDialogProps = {
   open: boolean;

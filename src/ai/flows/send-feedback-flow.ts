@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to handle sending feedback from users.
@@ -10,14 +11,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const FeedbackInputSchema = z.object({
+const FeedbackInputSchema = z.object({
   feedbackType: z.string().describe('The type of feedback (e.g., Bug, Feature Request, General).'),
   message: z.string().min(10, 'Feedback message must be at least 10 characters.').describe('The user\'s feedback message.'),
   email: z.string().email().optional().describe('The user\'s email address (optional).'),
 });
 export type FeedbackInput = z.infer<typeof FeedbackInputSchema>;
 
-export const FeedbackOutputSchema = z.object({
+const FeedbackOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
 });
