@@ -42,8 +42,8 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog";
 import { useState } from "react";
-import { AuthProvider } from "@/lib/auth";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
+import { SheetTitle } from "@/components/ui/sheet";
 
 
 const navItems = [
@@ -202,10 +202,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
       <CurrencyProvider>
         <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
       </CurrencyProvider>
-    </AuthProvider>
   );
 }

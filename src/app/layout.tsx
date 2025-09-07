@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { PT_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "ZenBiz",
@@ -31,7 +31,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-              {children}
+            {children}
           </AuthProvider>
           <Toaster />
         </ThemeProvider>
