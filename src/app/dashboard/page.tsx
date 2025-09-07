@@ -8,6 +8,7 @@ import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserData } from "@/context/user-data-context";
 import { AlertTriangle, Bell, Loader2 } from "lucide-react";
+import { ReceiptScannerCard } from "@/components/dashboard/receipt-scanner-card";
 
 export default function DashboardPage() {
   const { settings, loading } = useUserData();
@@ -28,10 +29,13 @@ export default function DashboardPage() {
       <div className="lg:col-span-2">
         <BudgetProgress />
       </div>
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-2">
         <SpendingChart />
       </div>
-      <Card>
+      <div className="lg:col-span-2">
+         <ReceiptScannerCard />
+      </div>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Bell className="size-5" />
@@ -70,7 +74,7 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-      <div className="lg:col-span-4">
+      <div className="lg:col-span-2">
         <RecentTransactions />
       </div>
     </div>
