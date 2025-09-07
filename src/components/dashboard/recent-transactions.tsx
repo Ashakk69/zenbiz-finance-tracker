@@ -52,7 +52,7 @@ export function RecentTransactions() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>>
+          </Table>
         )}
       </CardContent>
     </Card>
