@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -16,6 +17,9 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { useCurrency } from "@/context/currency-context";
+import { useUserData } from "@/context/user-data-context";
+import { useMemo } from "react";
+import { subMonths, format, startOfMonth, endOfMonth } from "date-fns";
 import {
   BarChart,
   Bar,
@@ -26,37 +30,74 @@ import {
   PieChart,
   Pie,
 } from "recharts";
+import { Loader2 } from "lucide-react";
 
-const spendingTrendData = [
-  { month: "Jan", spending: 28600 },
-  { month: "Feb", spending: 30500 },
-  { month: "Mar", spending: 23700 },
-  { month: "Apr", spending: 27800 },
-  { month: "May", spending: 18900 },
-  { month: "Jun", spending: 34120 },
-];
+const categoryConfig = {
+  amount: { label: "Amount" },
+  Food: { label: "Food", color: "hsl(var(--chart-1))" },
+  Shopping: { label: "Shopping", color: "hsl(var(--chart-2))" },
+  Transport: { label: "Transport", color: "hsl(var(--chart-3))" },
+  Bills: { label: "Bills", color: "hsl(var(--chart-4))" },
+  Entertainment: { label: "Entertainment", color: "hsl(var(--chart-5))" },
+  Health: { label: "Health", color: "hsl(var(--chart-1))" },
+  Others: { label: "Others", color: "hsl(var(--chart-2))" },
+} satisfies ChartConfig;
+
 const trendConfig = {
   spending: { label: "Spending", color: "hsl(var(--primary))" },
 } satisfies ChartConfig;
 
-const categoryData = [
-  { category: "Food", amount: 12000, fill: "var(--color-food)" },
-  { category: "Shopping", amount: 10000, fill: "var(--color-shopping)" },
-  { category: "Transport", amount: 5000, fill: "var(--color-transport)" },
-  { category: "Bills", amount: 15000, fill: "var(--color-bills)" },
-  { category: "Entertainment", amount: 4000, fill: "var(--color-entertainment)" },
-];
-const categoryConfig = {
-  amount: { label: "Amount" },
-  food: { label: "Food", color: "hsl(var(--chart-1))" },
-  shopping: { label: "Shopping", color: "hsl(var(--chart-2))" },
-  transport: { label: "Transport", color: "hsl(var(--chart-3))" },
-  bills: { label: "Bills", color: "hsl(var(--chart-4))" },
-  entertainment: { label: "Entertainment", color: "hsl(var(--chart-5))" },
-} satisfies ChartConfig;
 
 export default function ReportsPage() {
-  const { currency, formatCompact } = useCurrency();
+  const { currency } = useCurrency();
+  const { transactions, loading } = useUserData();
+
+  const { spendingTrendData, categoryData } = useMemo(() => {
+    const now = new Date();
+    // Spending Trend Data (Last 6 months)
+    const trendData = Array.from({ length: 6 }).map((_, i) => {
+        const d = subMonths(now, 5 - i);
+        const month = format(d, "MMM");
+        const monthStart = startOfMonth(d);
+        const monthEnd = endOfMonth(d);
+
+        const spending = transactions
+            .filter(t => {
+                const tDate = new Date(t.date);
+                return tDate >= monthStart && tDate <= monthEnd;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+        
+        return { month, spending };
+    });
+
+    // Category Breakdown (Current month)
+    const currentMonthStart = startOfMonth(now);
+    const catData = transactions
+        .filter(t => new Date(t.date) >= currentMonthStart)
+        .reduce((acc, t) => {
+            if (!acc[t.category]) {
+                acc[t.category] = { category: t.category, amount: 0, fill: `var(--color-${t.category})` };
+            }
+            acc[t.category].amount += t.amount;
+            return acc;
+        }, {} as {[key: string]: any});
+
+    return { 
+        spendingTrendData: trendData,
+        categoryData: Object.values(catData) 
+    };
+
+  }, [transactions]);
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 auto-rows-max lg:grid-cols-2">
       <Card className="lg:col-span-2">

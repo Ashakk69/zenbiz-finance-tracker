@@ -1,17 +1,21 @@
+
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText } from "lucide-react";
-
-const transactions = [
-    { id: "1", merchant: "Zomato", date: "2023-06-23", amount: "₹450.00", category: "Food" },
-    { id: "2", merchant: "Myntra", date: "2023-06-22", amount: "₹2,150.00", category: "Shopping" },
-    { id: "3", merchant: "Uber", date: "2023-06-21", amount: "₹280.00", category: "Transport" },
-    { id: "4", merchant: "Netflix", date: "2023-06-20", amount: "₹649.00", category: "Bills" },
-    { id: "5", merchant: "Apollo Pharmacy", date: "2023-06-19", amount: "₹890.00", category: "Health" },
-];
+import { FileText, Loader2 } from "lucide-react";
+import { useUserData } from "@/context/user-data-context";
+import { useCurrency } from "@/context/currency-context";
+import { format } from "date-fns";
 
 export function RecentTransactions() {
+  const { transactions, loading } = useUserData();
+  const { formatCurrency } = useCurrency();
+
+  // Get the 5 most recent transactions
+  const recentTransactions = transactions.slice(0, 5);
+
   return (
     <Card>
       <CardHeader>
@@ -22,28 +26,34 @@ export function RecentTransactions() {
         <CardDescription>A list of your most recent expenses.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Merchant</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell className="font-medium">{transaction.merchant}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{transaction.category}</Badge>
-                </TableCell>
-                <TableCell>{transaction.date}</TableCell>
-                <TableCell className="text-right">{transaction.amount}</TableCell>
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Merchant</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {recentTransactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell className="font-medium">{transaction.merchant}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{transaction.category}</Badge>
+                  </TableCell>
+                  <TableCell>{format(new Date(transaction.date), 'PPP')}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>>
+        )}
       </CardContent>
     </Card>
   );

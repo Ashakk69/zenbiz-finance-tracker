@@ -11,7 +11,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -42,41 +41,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
+import { useUserData } from "@/context/user-data-context";
 import { FilePlus2, Loader2, Sparkles, MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-
-type Transaction = {
-  id: string;
-  merchant: string;
-  date: string;
-  amount: number;
-  category: string;
-};
-
-const initialTransactions: Transaction[] = [
-  { id: "1", merchant: "Zomato", date: "2023-06-23", amount: 450.0, category: "Food" },
-  { id: "2", merchant: "Myntra", date: "2023-06-22", amount: 2150.0, category: "Shopping" },
-  { id: "3", merchant: "Uber", date: "2023-06-21", amount: 280.0, category: "Transport" },
-  { id: "4", merchant: "Netflix", date: "2023-06-20", amount: 649.0, category: "Bills" },
-  { id: "5", merchant: "Apollo Pharmacy", date: "2023-06-19", amount: 890.0, category: "Health" },
-  { id: "6", merchant: "Swiggy Instamart", date: "2023-06-18", amount: 1200.0, category: "Food" },
-  { id: "7", merchant: "BESCOM", date: "2023-06-17", amount: 1500.0, category: "Bills" },
-];
+import { format } from "date-fns";
 
 const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Others"];
 
 export default function ExpensesPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { transactions, loading, deleteTransaction } = useUserData();
   const { formatCurrency } = useCurrency();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    setTransactions([newTransaction, ...transactions]);
-    setIsDialogOpen(false);
-  };
-
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter(t => t.id !== id));
+  const handleDeleteTransaction = async (id: string) => {
+    try {
+      await deleteTransaction(id);
+    } catch (error) {
+        console.error("Failed to delete transaction", error);
+    }
   };
 
   return (
@@ -94,87 +76,109 @@ export default function ExpensesPage() {
                   <FilePlus2 className="mr-2 h-4 w-4" /> Add Expense
                 </Button>
               </DialogTrigger>
-              <AddExpenseDialog onAddTransaction={handleAddTransaction} />
+              <AddExpenseDialog onAddTransaction={() => setIsDialogOpen(false)} />
             </Dialog>
           </CardHeader>
           <CardContent>
-            {/* Desktop Table */}
-            <Table className="hidden md:table">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Merchant</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell className="font-medium">{transaction.merchant}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{transaction.category}</Badge>
-                    </TableCell>
-                    <TableCell>{transaction.date}</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(transaction.amount)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {/* Mobile Card List */}
-            <div className="md:hidden space-y-4">
-              {transactions.map(transaction => (
-                 <Card key={transaction.id} className="w-full">
-                  <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                          <div className="flex flex-col space-y-1">
-                              <span className="font-medium">{transaction.merchant}</span>
-                              <span className="text-sm text-muted-foreground">{transaction.date}</span>
-                              <Badge variant="outline" className="w-fit">{transaction.category}</Badge>
+            {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div> : 
+            <>
+                {/* Desktop Table */}
+                <Table className="hidden md:table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Merchant</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="font-medium">{transaction.merchant}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{transaction.category}</Badge>
+                        </TableCell>
+                        <TableCell>{format(new Date(transaction.date), 'PPP')}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(transaction.amount)}
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {/* Mobile Card List */}
+                <div className="md:hidden space-y-4">
+                  {transactions.map(transaction => (
+                     <Card key={transaction.id} className="w-full">
+                      <CardContent className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                              <div className="flex flex-col space-y-1">
+                                  <span className="font-medium">{transaction.merchant}</span>
+                                  <span className="text-sm text-muted-foreground">{format(new Date(transaction.date), 'PPP')}</span>
+                                  <Badge variant="outline" className="w-fit">{transaction.category}</Badge>
+                              </div>
                           </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-lg">{formatCurrency(transaction.amount)}</div>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                  </CardContent>
-              </Card>
-              ))}
-            </div>
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-lg">{formatCurrency(transaction.amount)}</div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                      </CardContent>
+                  </Card>
+                  ))}
+                </div>
+            </>
+            }
           </CardContent>
         </Card>
       </div>
       <div>
-        <AiCategorizationCard onAddTransaction={handleAddTransaction} />
+        <AiCategorizationCard onAddTransaction={() => {}} />
       </div>
     </div>
   );
 }
 
-function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: (t: Transaction) => void }) {
+function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: () => void }) {
   const { currency } = useCurrency();
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const { addTransaction: addUserTransaction } = useUserData();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
+    const newTransaction = {
       merchant: formData.get("merchant") as string,
       amount: parseFloat(formData.get("amount") as string),
       category: formData.get("category") as string,
-      date: new Date().toISOString().split("T")[0],
     };
-    onAddTransaction(newTransaction);
+    try {
+        await addUserTransaction(newTransaction);
+        onAddTransaction();
+    } catch(error) {
+        console.error("Failed to add transaction", error);
+    }
   };
 
   return (
@@ -217,11 +221,12 @@ function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: (t: Transact
   );
 }
 
-function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: Transaction) => void }) {
+function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: any) => void }) {
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { formatCurrency, currency } = useCurrency();
+  const { formatCurrency } = useCurrency();
+  const { addTransaction: addUserTransaction } = useUserData();
 
   const handleCategorize = async () => {
     if (!text.trim()) {
@@ -232,14 +237,12 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: Tran
     try {
       const result = await automaticExpenseCategorization({ notificationText: text });
       if (result.category && result.amount && result.merchant) {
-        const newTransaction: Transaction = {
-          id: Date.now().toString(),
+        const newTransaction = {
           merchant: result.merchant,
           amount: result.amount,
           category: categories.includes(result.category) ? result.category : "Others",
-          date: new Date().toISOString().split("T")[0],
         };
-        onAddTransaction(newTransaction);
+        await addUserTransaction(newTransaction);
         toast({
           title: "Expense Categorized!",
           description: `${result.merchant} for ${formatCurrency(result.amount)} was added to ${newTransaction.category}.`,

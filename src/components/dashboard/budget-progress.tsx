@@ -4,39 +4,80 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useCurrency } from "@/context/currency-context";
+import { useUserData } from "@/context/user-data-context";
+import { useMemo } from "react";
+
+// Mock category budgets
+const categoryBudgets: { [key: string]: number } = {
+    Food: 12000,
+    Shopping: 10000,
+    Transport: 5000,
+    Bills: 15000,
+    Entertainment: 4000,
+    Health: 3000,
+    Others: 1000
+};
 
 export function BudgetProgress() {
     const { formatCurrency, formatCompact } = useCurrency();
+    const { settings, transactions } = useUserData();
+
+    const { totalSpent, budget, remaining, progressValue, categoryProgress } = useMemo(() => {
+        const monthlyBudget = settings?.monthlyBudget ?? 0;
+        
+        const now = new Date();
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const totalSpent = transactions
+            .filter(t => new Date(t.date) >= currentMonthStart)
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        const remaining = monthlyBudget - totalSpent;
+        const progressValue = monthlyBudget > 0 ? (totalSpent / monthlyBudget) * 100 : 0;
+        
+        const categorySpending = transactions
+            .filter(t => new Date(t.date) >= currentMonthStart)
+            .reduce((acc, t) => {
+                if(!acc[t.category]) acc[t.category] = 0;
+                acc[t.category] += t.amount;
+                return acc;
+            }, {} as {[key: string]: number});
+
+        const categoryProgress = Object.keys(categoryBudgets).map(cat => ({
+            name: cat,
+            spent: categorySpending[cat] ?? 0,
+            budget: categoryBudgets[cat],
+            progress: categoryBudgets[cat] > 0 ? ((categorySpending[cat] ?? 0) / categoryBudgets[cat]) * 100 : 0
+        })).slice(0, 4); // show top 4
+
+        return { totalSpent, budget: monthlyBudget, remaining, progressValue, categoryProgress };
+    }, [settings, transactions]);
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Monthly Budget</CardTitle>
-                <CardDescription>You have {formatCurrency(15879.50)} remaining this month.</CardDescription>
+                <CardDescription>
+                    You have {formatCurrency(remaining)} remaining this month.
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
                     <div className="flex justify-between items-baseline">
-                        <span className="text-2xl font-bold">{formatCurrency(34120.50)}</span>
-                        <span className="text-sm text-muted-foreground">of {formatCurrency(50000)} spent</span>
+                        <span className="text-2xl font-bold">{formatCurrency(totalSpent)}</span>
+                        <span className="text-sm text-muted-foreground">of {formatCurrency(budget)} spent</span>
                     </div>
-                    <Progress value={68} className="h-3" />
+                    <Progress value={progressValue} className="h-3" />
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-4">
-                        <div>
-                            <div className="flex justify-between text-muted-foreground"><span>Food</span><span>{formatCompact(8000)} / {formatCompact(12000)}</span></div>
-                            <Progress value={66} className="h-1.5" />
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-muted-foreground"><span>Shopping</span><span>{formatCompact(6000)} / {formatCompact(10000)}</span></div>
-                            <Progress value={60} className="h-1.5" />
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-muted-foreground"><span>Transport</span><span>{formatCompact(3000)} / {formatCompact(5000)}</span></div>
-                            <Progress value={60} className="h-1.5" />
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-muted-foreground"><span>Bills</span><span>{formatCompact(10000)} / {formatCompact(15000)}</span></div>
-                            <Progress value={67} className="h-1.5" />
-                        </div>
+                        {categoryProgress.map(cat => (
+                            <div key={cat.name}>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>{cat.name}</span>
+                                    <span>{formatCompact(cat.spent)} / {formatCompact(cat.budget)}</span>
+                                </div>
+                                <Progress value={cat.progress} className="h-1.5" />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </CardContent>

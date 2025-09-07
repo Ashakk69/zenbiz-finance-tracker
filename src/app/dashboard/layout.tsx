@@ -43,6 +43,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
+import { UserDataProvider } from "@/context/user-data-context";
 
 
 const navItems = [
@@ -200,8 +201,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
+    <AuthProvider>
       <CurrencyProvider>
-        <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
+        <UserDataProvider>
+          <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
+        </UserDataProvider>
       </CurrencyProvider>
+    </AuthProvider>
   );
 }
