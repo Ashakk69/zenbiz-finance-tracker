@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Automatically categorizes expenses by parsing SMS/UPI notifications using NLP.
@@ -21,7 +22,8 @@ const AutomaticExpenseCategorizationOutputSchema = z.object({
   category: z
     .string()
     .describe(
-      'The predicted category of the expense (Food, Transport, Bills, Shopping, Entertainment, Health, Others).'n    ),
+      'The predicted category of the expense (Food, Transport, Bills, Shopping, Entertainment, Health, Others).'
+    ),
   amount: z.number().optional().describe('The extracted amount from the notification, if available.'),
   merchant: z.string().optional().describe('The extracted merchant name from the notification, if available.'),
 });
