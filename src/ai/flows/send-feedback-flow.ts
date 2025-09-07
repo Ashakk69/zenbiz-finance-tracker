@@ -36,11 +36,20 @@ const sendFeedbackFlow = ai.defineFlow(
     outputSchema: FeedbackOutputSchema,
   },
   async (input) => {
+    if (!process.env.RESEND_API_KEY) {
+      console.log('RESEND_API_KEY not found, skipping email sending.');
+      // Simulating a successful submission for UI purposes
+      return {
+        success: true,
+        message: 'Thank you for your feedback! (Dev mode: email not sent).',
+      };
+    }
+    
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
 
       await resend.emails.send({
-        from: 'feedback@zenbiz.app', // You must use a verified domain from Resend
+        from: 'onboarding@resend.dev', // Using Resend's free test domain
         to: 'yoursabhishek46@gmail.com',
         subject: `New Feedback: ${input.feedbackType}`,
         html: `<p><strong>From:</strong> ${input.email || 'Anonymous'}</p><p><strong>Message:</strong></p><p>${input.message}</p>`,
@@ -60,3 +69,4 @@ const sendFeedbackFlow = ai.defineFlow(
     }
   }
 );
+
