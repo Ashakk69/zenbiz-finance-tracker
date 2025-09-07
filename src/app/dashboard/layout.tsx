@@ -25,7 +25,7 @@ import {
   Settings,
   Loader2,
   LogOut,
-  Home,
+  User as UserIcon,
   MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,7 @@ const navItems = [
   { href: "/dashboard/expenses", icon: Wallet, label: "Expenses" },
   { href: "/dashboard/reports", icon: BarChart3, label: "Reports" },
   { href: "/dashboard/ai-insights", icon: Sparkles, label: "AI Insights" },
+  { href: "/dashboard/profile", icon: UserIcon, label: "Profile" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -136,8 +137,12 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard/settings">Settings</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
@@ -170,7 +175,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/dashboard/settings">Settings</Link></DropdownMenuItem>
                   <DropdownMenuItem>Support</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
