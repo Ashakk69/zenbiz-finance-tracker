@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/context/currency-context";
 import { BrainCircuit, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -28,6 +29,7 @@ export default function AiInsightsPage() {
   const [suggestions, setSuggestions] = useState<BudgetSuggestionsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { currency } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,7 +73,7 @@ export default function AiInsightsPage() {
                 name="income"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Monthly Income (₹)</FormLabel>
+                    <FormLabel>Monthly Income ({currency})</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="85000" {...field} />
                     </FormControl>

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/context/currency-context";
 import { FilePlus2, Loader2, Sparkles } from "lucide-react";
 
 type Transaction = {
@@ -64,6 +65,7 @@ const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "
 export default function ExpensesPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { formatCurrency } = useCurrency();
 
   const handleAddTransaction = (newTransaction: Transaction) => {
     setTransactions([newTransaction, ...transactions]);
@@ -107,10 +109,7 @@ export default function ExpensesPage() {
                     </TableCell>
                     <TableCell>{transaction.date}</TableCell>
                     <TableCell className="text-right">
-                      {transaction.amount.toLocaleString("en-IN", {
-                        style: "currency",
-                        currency: "INR",
-                      })}
+                      {formatCurrency(transaction.amount)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -127,6 +126,7 @@ export default function ExpensesPage() {
 }
 
 function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: (t: Transaction) => void }) {
+  const { currency } = useCurrency();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -154,7 +154,7 @@ function AddExpenseDialog({ onAddTransaction }: { onAddTransaction: (t: Transact
           <Input id="merchant" name="merchant" placeholder="e.g., Zomato" required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="amount">Amount (₹)</Label>
+          <Label htmlFor="amount">Amount ({currency})</Label>
           <Input id="amount" name="amount" type="number" step="0.01" placeholder="e.g., 450.50" required />
         </div>
         <div className="space-y-2">
@@ -184,6 +184,7 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: Tran
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { formatCurrency, currency } = useCurrency();
 
   const handleCategorize = async () => {
     if (!text.trim()) {
@@ -204,7 +205,7 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: Tran
         onAddTransaction(newTransaction);
         toast({
           title: "Expense Categorized!",
-          description: `${result.merchant} for ₹${result.amount} was added to ${newTransaction.category}.`,
+          description: `${result.merchant} for ${formatCurrency(result.amount)} was added to ${newTransaction.category}.`,
         });
         setText("");
       } else {
@@ -236,7 +237,7 @@ function AiCategorizationCard({ onAddTransaction }: { onAddTransaction: (t: Tran
       <CardContent>
         <div className="space-y-4">
           <Textarea
-            placeholder="e.g., 'Payment of Rs.450 to Zomato from your account...'"
+            placeholder={`e.g., 'Payment of ${formatCurrency(450)} to Zomato from your account...'`}
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={4}

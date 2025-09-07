@@ -15,6 +15,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
+import { useCurrency } from "@/context/currency-context";
 import {
   BarChart,
   Bar,
@@ -55,6 +56,7 @@ const categoryConfig = {
 } satisfies ChartConfig;
 
 export default function ReportsPage() {
+  const { currency, formatCompact } = useCurrency();
   return (
     <div className="grid gap-6 auto-rows-max lg:grid-cols-2">
       <Card className="lg:col-span-2">
@@ -74,7 +76,7 @@ export default function ReportsPage() {
                   axisLine={false}
                 />
                 <YAxis
-                  tickFormatter={(value) => `₹${Number(value) / 1000}k`}
+                  tickFormatter={(value) => `${currency === 'INR' ? '₹' : '$'}${Number(value) / 1000}k`}
                   tickLine={false}
                   axisLine={false}
                   width={80}

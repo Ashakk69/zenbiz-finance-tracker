@@ -1,7 +1,12 @@
+
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from "@/context/currency-context";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export function BalanceCard() {
+  const { formatCurrency } = useCurrency();
   return (
     <Card>
       <CardHeader>
@@ -9,7 +14,7 @@ export function BalanceCard() {
         <CardDescription>+20.1% from last month</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="text-4xl font-bold">₹1,24,530.60</div>
+        <div className="text-4xl font-bold">{formatCurrency(124530.60)}</div>
         <div className="grid grid-cols-2 gap-4 mt-6">
           <div>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -18,7 +23,7 @@ export function BalanceCard() {
               </div>
               Income
             </div>
-            <div className="text-xl font-semibold mt-1">₹85,000.00</div>
+            <div className="text-xl font-semibold mt-1">{formatCurrency(85000.00)}</div>
           </div>
           <div>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -27,7 +32,7 @@ export function BalanceCard() {
               </div>
               Expenses
             </div>
-            <div className="text-xl font-semibold mt-1">₹34,120.50</div>
+            <div className="text-xl font-semibold mt-1">{formatCurrency(34120.50)}</div>
           </div>
         </div>
       </CardContent>

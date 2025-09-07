@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CurrencyProvider } from "@/context/currency-context";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -183,7 +184,9 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
+      <CurrencyProvider>
+        <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
+      </CurrencyProvider>
     </AuthProvider>
   );
 }
