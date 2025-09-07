@@ -43,6 +43,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog";
 import { useState } from "react";
 import { AuthProvider } from "@/lib/auth";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 
 
 const navItems = [
@@ -89,6 +90,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen w-full">
         <SidebarProvider>
           <Sidebar collapsible="icon" className="hidden md:block">
+          <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
             <SidebarHeader>
               <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <ZenBizLogo className="size-7 text-primary" />
@@ -156,6 +158,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Feedback
               </Button>
+              <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
