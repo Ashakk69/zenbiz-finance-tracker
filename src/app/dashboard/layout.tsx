@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import {
   SidebarProvider,
   Sidebar,
@@ -23,6 +24,8 @@ import {
   Sparkles,
   Settings,
   Menu,
+  Loader2,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,13 +45,35 @@ const navItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading, signOut } = useAuth();
   const currentPage = navItems.find((item) => item.href === pathname);
+  
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/login");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push("/login");
+    return null;
+  }
+  
+  const getInitials = (email: string | null | undefined) => {
+    if (!email) return "U";
+    return email.substring(0, 2).toUpperCase();
+  };
+
 
   return (
     <div className="min-h-screen w-full">
@@ -83,31 +108,31 @@ export default function DashboardLayout({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="justify-start gap-3 w-full px-2">
                      <Avatar className="h-8 w-8">
-                        <AvatarImage src="https://picsum.photos/40/40" data-ai-hint="person avatar" />
-                        <AvatarFallback>JD</AvatarFallback>
+                        <AvatarImage src={user.photoURL ?? "https://picsum.photos/40/40"} data-ai-hint="person avatar" />
+                        <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start">
-                        <span className="font-semibold text-sm">John Doe</span>
+                        <span className="font-semibold text-sm truncate">{user.displayName || user.email}</span>
                       </div>
                   </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">John Doe</p>
+                        <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          john.doe@email.com
+                          {user.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Billing</DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <Link href="/login">
-                      <DropdownMenuItem>Log out</DropdownMenuItem>
-                    </Link>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarFooter>
@@ -122,8 +147,8 @@ export default function DashboardLayout({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://picsum.photos/40/40" data-ai-hint="person avatar" />
-                      <AvatarFallback>JD</AvatarFallback>
+                       <AvatarImage src={user.photoURL ?? "https://picsum.photos/40/40"} data-ai-hint="person avatar" />
+                       <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -133,9 +158,10 @@ export default function DashboardLayout({
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem>Support</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                   <Link href="/login">
-                      <DropdownMenuItem>Logout</DropdownMenuItem>
-                    </Link>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </header>
@@ -146,5 +172,18 @@ export default function DashboardLayout({
         </SidebarProvider>
       </div>
     </div>
+  );
+}
+
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <ProtectedDashboardLayout>{children}</ProtectedDashboardLayout>
+    </AuthProvider>
   );
 }

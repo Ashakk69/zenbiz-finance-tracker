@@ -24,17 +24,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { ZenBizLogo } from "@/components/icons";
 import { useAuth } from "@/lib/auth";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
-export default function LoginPage() {
-  const { signIn } = useAuth();
+export default function SignUpPage() {
+  const { signUp } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -50,13 +51,13 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signIn(values.email, values.password);
+      await signUp(values.email, values.password);
       router.push("/dashboard");
     } catch (error: any) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Sign Up Failed",
         description: error.message || "An unexpected error occurred.",
       });
     } finally {
@@ -70,10 +71,10 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <ZenBizLogo className="mx-auto h-12 w-12 text-primary" />
           <CardTitle className="text-2xl font-headline mt-4">
-            Welcome Back
+            Create an Account
           </CardTitle>
           <CardDescription>
-            Sign in to continue to ZenBiz.
+            Start managing your finances with ZenBiz.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,15 +102,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                     <div className="flex items-center">
-                      <FormLabel>Password</FormLabel>
-                      <Link
-                        href="#"
-                        className="ml-auto inline-block text-sm underline"
-                      >
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -119,17 +112,17 @@ export default function LoginPage() {
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Login
+                Create Account
               </Button>
               <Button variant="outline" className="w-full" disabled>
-                Login with Google
+                Sign up with Google
               </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
+            Already have an account?{" "}
+            <Link href="/login" className="underline">
+              Sign in
             </Link>
           </div>
         </CardContent>
