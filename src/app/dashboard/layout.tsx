@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -13,7 +14,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { ZenBizLogo } from "@/components/icons";
@@ -23,7 +23,6 @@ import {
   BarChart3,
   Sparkles,
   Settings,
-  Menu,
   Loader2,
   LogOut,
 } from "lucide-react";
@@ -37,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CurrencyProvider } from "@/context/currency-context";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -82,9 +82,9 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
         <SidebarProvider>
           <Sidebar collapsible="icon">
             <SidebarHeader>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <ZenBizLogo className="size-7 text-primary" />
-                <h1 className="text-xl font-semibold font-headline">ZenBiz</h1>
+                <h1 className="text-xl font-semibold font-headline group-data-[collapsible=icon]:hidden">ZenBiz</h1>
               </div>
             </SidebarHeader>
             <SidebarContent>
@@ -107,13 +107,13 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
             <SidebarFooter>
                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="justify-start gap-3 w-full px-2">
+                  <Button variant="ghost" className="justify-start gap-3 w-full px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                      <Avatar className="h-8 w-8">
                         <AvatarImage src={user.photoURL ?? "https://picsum.photos/40/40"} data-ai-hint="person avatar" />
                         <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col items-start">
-                        <span className="font-semibold text-sm truncate">{user.displayName || user.email}</span>
+                      <div className="flex flex-col items-start group-data-[collapsible=icon]:hidden">
+                        <span className="font-semibold text-sm truncate max-w-[120px]">{user.displayName || user.email}</span>
                       </div>
                   </Button>
                   </DropdownMenuTrigger>
@@ -166,7 +166,7 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </header>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background/90">
               {children}
             </main>
           </div>

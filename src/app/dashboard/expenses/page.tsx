@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,6 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -40,7 +42,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
-import { FilePlus2, Loader2, Sparkles } from "lucide-react";
+import { FilePlus2, Loader2, Sparkles, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 type Transaction = {
   id: string;
@@ -72,9 +75,13 @@ export default function ExpensesPage() {
     setIsDialogOpen(false);
   };
 
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(transactions.filter(t => t.id !== id));
+  };
+
   return (
-    <div className="grid gap-6 md:grid-cols-3 auto-rows-max">
-      <div className="md:col-span-2">
+    <div className="grid gap-6 lg:grid-cols-3 auto-rows-max">
+      <div className="lg:col-span-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -91,7 +98,8 @@ export default function ExpensesPage() {
             </Dialog>
           </CardHeader>
           <CardContent>
-            <Table>
+            {/* Desktop Table */}
+            <Table className="hidden md:table">
               <TableHeader>
                 <TableRow>
                   <TableHead>Merchant</TableHead>
@@ -115,6 +123,35 @@ export default function ExpensesPage() {
                 ))}
               </TableBody>
             </Table>
+            {/* Mobile Card List */}
+            <div className="md:hidden space-y-4">
+              {transactions.map(transaction => (
+                 <Card key={transaction.id} className="w-full">
+                  <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                          <div className="flex flex-col space-y-1">
+                              <span className="font-medium">{transaction.merchant}</span>
+                              <span className="text-sm text-muted-foreground">{transaction.date}</span>
+                              <Badge variant="outline" className="w-fit">{transaction.category}</Badge>
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-lg">{formatCurrency(transaction.amount)}</div>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                  </CardContent>
+              </Card>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
