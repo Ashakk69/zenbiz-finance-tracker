@@ -19,11 +19,17 @@ export function BalanceCard() {
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
     const currentMonthExpenses = transactions
-        .filter(t => new Date(t.date) >= currentMonthStart && t.amount > 0)
+        .filter(t => {
+            const transactionDate = new Date(t.date);
+            return transactionDate >= currentMonthStart && transactionDate <= now && t.amount > 0;
+        })
         .reduce((sum, t) => sum + t.amount, 0);
 
     const lastMonthExpenses = transactions
-        .filter(t => new Date(t.date) >= lastMonthStart && new Date(t.date) <= lastMonthEnd && t.amount > 0)
+        .filter(t => {
+            const transactionDate = new Date(t.date);
+            return transactionDate >= lastMonthStart && transactionDate <= lastMonthEnd && t.amount > 0;
+        })
         .reduce((sum, t) => sum + t.amount, 0);
     
     const income = settings?.income ?? 0;
