@@ -39,7 +39,10 @@ export default function SettingsPage() {
 
   const handleSettingsChange = (key: string, value: any) => {
     if (localSettings) {
-        const keys = key.split('.');
+      const keys = key.split('.');
+      if (keys.length === 1) {
+        setLocalSettings({ ...localSettings, [key]: value });
+      } else {
         const newSettings = { ...localSettings };
         let current: any = newSettings;
         for (let i = 0; i < keys.length - 1; i++) {
@@ -47,6 +50,7 @@ export default function SettingsPage() {
         }
         current[keys[keys.length - 1]] = value;
         setLocalSettings(newSettings);
+      }
     }
   };
 
