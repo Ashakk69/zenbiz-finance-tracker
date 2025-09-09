@@ -7,6 +7,9 @@ import { useCurrency } from "@/context/currency-context";
 import { useUserData } from "@/context/user-data-context";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 
 // Mock category budgets
 const categoryBudgets: { [key: string]: number } = {
@@ -85,11 +88,19 @@ export function BudgetProgress() {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Monthly Budget</CardTitle>
-                <CardDescription>
-                    You have {formatCurrency(remaining)} remaining this month.
-                </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Monthly Budget</CardTitle>
+                    <CardDescription>
+                        You have {formatCurrency(remaining)} remaining this month.
+                    </CardDescription>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/settings">
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                    </Link>
+                </Button>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
