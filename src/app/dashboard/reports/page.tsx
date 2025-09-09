@@ -29,6 +29,7 @@ import {
   CartesianGrid,
   PieChart,
   Pie,
+  Cell,
 } from "recharts";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,7 +83,7 @@ export default function ReportsPage() {
                 acc[categoryKey] = { 
                     category: categoryKey, 
                     amount: 0, 
-                    fill: `var(--color-${categoryKey})` 
+                    fill: categoryConfig[categoryKey]?.color ? `hsl(${categoryConfig[categoryKey].color})` : `hsl(var(--chart-1))`
                 };
             }
             acc[categoryKey].amount += t.amount;
@@ -175,7 +176,7 @@ export default function ReportsPage() {
                   strokeWidth={5}
                 >
                   {categoryData.map((entry) => (
-                    <RechartsPrimitive.Cell key={`cell-${entry.category}`} fill={entry.fill} />
+                    <Cell key={`cell-${entry.category}`} fill={entry.fill} />
                   ))}
                 </Pie>
                  <ChartLegend
