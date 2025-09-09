@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useCurrency } from "@/context/currency-context";
 import { useUserData } from "@/context/user-data-context";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock category budgets
 const categoryBudgets: { [key: string]: number } = {
@@ -20,7 +21,7 @@ const categoryBudgets: { [key: string]: number } = {
 
 export function BudgetProgress() {
     const { formatCurrency, formatCompact } = useCurrency();
-    const { settings, transactions } = useUserData();
+    const { settings, transactions, loading } = useUserData();
 
     const { totalSpent, budget, remaining, progressValue, categoryProgress } = useMemo(() => {
         const monthlyBudget = settings?.monthlyBudget ?? 0;
@@ -48,10 +49,39 @@ export function BudgetProgress() {
             spent: categorySpending[cat] ?? 0,
             budget: categoryBudgets[cat],
             progress: categoryBudgets[cat] > 0 ? ((categorySpending[cat] ?? 0) / categoryBudgets[cat]) * 100 : 0
-        })).slice(0, 4); // show top 4
+        })).slice(0, 4);
 
         return { totalSpent, budget: monthlyBudget, remaining, progressValue, categoryProgress };
     }, [settings, transactions]);
+    
+    if (loading.settings || loading.transactions) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex justify-between items-baseline">
+                        <Skeleton className="h-8 w-1/3" />
+                        <Skeleton className="h-4 w-1/4" />
+                    </div>
+                    <Skeleton className="h-3 w-full" />
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                             <div key={i} className="space-y-2">
+                                <div className="flex justify-between">
+                                    <Skeleton className="h-4 w-1/3" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                                <Skeleton className="h-1.5 w-full" />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
         <Card>

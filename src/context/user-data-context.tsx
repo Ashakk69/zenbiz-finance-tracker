@@ -4,12 +4,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
 import { listenToTransactions, listenToUserSettings, UserSettings, Transaction, updateUserSettings, addTransaction, deleteTransaction } from '@/lib/firestore';
-import { useCurrency, Currency } from './currency-context';
+import { useCurrency } from './currency-context';
 
 interface UserDataContextType {
   transactions: Transaction[];
   settings: UserSettings | null;
-  loading: boolean;
+  loading: {
+      settings: boolean;
+      transactions: boolean;
+  };
   addTransaction: (transaction: Omit<Transaction, 'id' | 'userId' | 'date'>) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
   updateSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
@@ -22,19 +25,23 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({ children }
   const { setCurrency } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({ settings: true, transactions: true });
 
   useEffect(() => {
     if (user) {
-      setLoading(true);
+      setLoading({ settings: true, transactions: true });
       
-      const unsubscribeTransactions = listenToTransactions(user.uid, setTransactions);
+      const unsubscribeTransactions = listenToTransactions(user.uid, (newTransactions) => {
+          setTransactions(newTransactions);
+          setLoading(prev => ({ ...prev, transactions: false }));
+      });
+      
       const unsubscribeSettings = listenToUserSettings(user.uid, (newSettings) => {
         setSettings(newSettings);
         if (newSettings?.currency) {
           setCurrency(newSettings.currency);
         }
-        setLoading(false);
+        setLoading(prev => ({ ...prev, settings: false }));
       });
 
       return () => {
@@ -45,7 +52,7 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({ children }
       // Not logged in, clear data
       setTransactions([]);
       setSettings(null);
-      setLoading(false);
+      setLoading({ settings: false, transactions: false });
     }
   }, [user, setCurrency]);
 

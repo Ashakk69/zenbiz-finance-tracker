@@ -44,12 +44,13 @@ import { FilePlus2, Loader2, MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { ReceiptScannerCard } from "@/components/dashboard/receipt-scanner-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Others"];
 
 export default function ExpensesPage() {
-  const { transactions, loading, deleteTransaction } = useUserData();
+  const { transactions, loading } = useUserData();
   const { formatCurrency } = useCurrency();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -79,7 +80,21 @@ export default function ExpensesPage() {
           </Dialog>
         </CardHeader>
         <CardContent>
-          {loading ? <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div> : 
+          {loading.transactions ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex justify-between items-center p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className="space-y-2">
+                              <Skeleton className="h-4 w-[150px]" />
+                              <Skeleton className="h-4 w-[100px]" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-6 w-[80px]" />
+                    </div>
+                ))}
+              </div>
+          ) : 
           <>
               {/* Desktop Table */}
               <Table className="hidden md:table">

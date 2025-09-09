@@ -1,15 +1,16 @@
 
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useCurrency } from "@/context/currency-context";
 import { useUserData } from "@/context/user-data-context";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function BalanceCard() {
   const { formatCurrency } = useCurrency();
-  const { transactions } = useUserData();
+  const { transactions, loading } = useUserData();
 
   const { income, expenses, balance, lastMonthPercentage } = useMemo(() => {
     const now = new Date();
@@ -25,9 +26,6 @@ export function BalanceCard() {
         .filter(t => new Date(t.date) >= lastMonthStart && new Date(t.date) <= lastMonthEnd && t.amount > 0)
         .reduce((sum, t) => sum + t.amount, 0);
     
-    // Assuming "income" transactions have negative amounts, let's filter for that
-    // Or we could add a type to transactions. For now we assume all positive are expenses.
-    // We will simulate income for now.
     const income = 85000;
     const balance = income - currentMonthExpenses;
 
@@ -42,6 +40,30 @@ export function BalanceCard() {
         lastMonthPercentage: percentageChange
     }
   }, [transactions]);
+  
+  if (loading.transactions) {
+      return (
+          <Card>
+              <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                  <Skeleton className="h-10 w-1/2 mb-6" />
+                   <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Skeleton className="h-5 w-1/2 mb-2"/>
+                            <Skeleton className="h-6 w-3/4"/>
+                        </div>
+                        <div>
+                            <Skeleton className="h-5 w-1/2 mb-2"/>
+                            <Skeleton className="h-6 w-3/4"/>
+                        </div>
+                   </div>
+              </CardContent>
+          </Card>
+      )
+  }
 
 
   return (

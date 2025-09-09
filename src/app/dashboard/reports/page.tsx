@@ -31,6 +31,7 @@ import {
   Pie,
 } from "recharts";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const categoryConfig = {
   amount: { label: "Amount" },
@@ -49,7 +50,7 @@ const trendConfig = {
 
 
 export default function ReportsPage() {
-  const { formatCompact } = useCurrency();
+  const { formatCompact, formatCurrency } = useCurrency();
   const { transactions, loading } = useUserData();
 
   const { spendingTrendData, categoryData } = useMemo(() => {
@@ -90,10 +91,27 @@ export default function ReportsPage() {
 
   }, [transactions]);
   
-  if (loading) {
+  if (loading.transactions) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="grid gap-6 auto-rows-max lg:grid-cols-2">
+         <Card className="lg:col-span-2">
+            <CardHeader>
+                <Skeleton className="h-7 w-48" />
+                <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+            </CardContent>
+         </Card>
+         <Card className="lg:col-span-2">
+            <CardHeader>
+                <Skeleton className="h-7 w-48" />
+                <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="flex justify-center items-center">
+                <Skeleton className="h-[250px] w-[250px] rounded-full" />
+            </CardContent>
+         </Card>
       </div>
     );
   }
@@ -124,7 +142,7 @@ export default function ReportsPage() {
                 />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
+                  content={<ChartTooltipContent indicator="dot" formatter={(value) => formatCurrency(Number(value))} />}
                 />
                 <Bar dataKey="spending" fill="var(--color-spending)" radius={4} />
               </BarChart>
@@ -142,7 +160,7 @@ export default function ReportsPage() {
             <ResponsiveContainer>
               <PieChart>
                 <ChartTooltip
-                  content={<ChartTooltipContent nameKey="category" hideLabel />}
+                  content={<ChartTooltipContent nameKey="category" hideLabel formatter={(value) => formatCurrency(Number(value))} />}
                 />
                 <Pie
                   data={categoryData}

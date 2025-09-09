@@ -9,12 +9,12 @@ import { useUserData } from "@/context/user-data-context";
 import { useCurrency } from "@/context/currency-context";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function RecentTransactions() {
   const { transactions, loading } = useUserData();
   const { formatCurrency } = useCurrency();
 
-  // Get the 5 most recent transactions
   const recentTransactions = useMemo(() => transactions.slice(0, 5), [transactions]);
 
   return (
@@ -27,9 +27,20 @@ export function RecentTransactions() {
         <CardDescription>A list of your most recent expenses.</CardDescription>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin" />
+        {loading.transactions ? (
+          <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-[150px]" />
+                            <Skeleton className="h-4 w-[100px]" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-6 w-[80px]" />
+                  </div>
+              ))}
           </div>
         ) : (
           <Table>

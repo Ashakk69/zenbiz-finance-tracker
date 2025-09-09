@@ -2,13 +2,14 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartTooltip, ChartTooltipContent, ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
 import { useUserData } from "@/context/user-data-context";
 import { format, subMonths, startOfMonth } from "date-fns";
 import { useCurrency } from "@/context/currency-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
   spending: {
@@ -18,7 +19,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function SpendingChart() {
-    const { transactions } = useUserData();
+    const { transactions, loading } = useUserData();
     const { formatCompact } = useCurrency();
 
     const chartData = useMemo(() => {
@@ -36,21 +37,18 @@ export function SpendingChart() {
         });
         return data;
     }, [transactions]);
-
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Spending Summary</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="monthly">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="daily">Daily</TabsTrigger>
-            <TabsTrigger value="weekly">Weekly</TabsTrigger>
-            <TabsTrigger value="monthly">Monthly</TabsTrigger>
-          </TabsList>
-          <TabsContent value="monthly">
+    
+    const renderContent = () => {
+        if (loading.transactions) {
+            return (
+                <div className="h-[250px] w-full flex items-end gap-4 px-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <Skeleton key={i} className="h-full w-full" style={{ height: `${Math.random() * 80 + 10}%`}}/>
+                    ))}
+                </div>
+            )
+        }
+        return (
             <ChartContainer config={chartConfig} className="h-[250px] w-full">
               <ResponsiveContainer>
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -76,9 +74,26 @@ export function SpendingChart() {
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
+        )
+    }
+
+
+  return (
+    <Card>
+        <CardHeader>
+            <CardTitle>Spending Summary</CardTitle>
+            <CardDescription>Your spending over the last 6 months.</CardDescription>
+        </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="monthly">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsTrigger value="daily" disabled>Daily</TabsTrigger>
+            <TabsTrigger value="weekly" disabled>Weekly</TabsTrigger>
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          </TabsList>
+          <TabsContent value="monthly">
+            {renderContent()}
           </TabsContent>
-          <TabsContent value="daily"><div className="flex justify-center items-center h-[250px] text-muted-foreground">Daily data not available</div></TabsContent>
-          <TabsContent value="weekly"><div className="flex justify-center items-center h-[250px] text-muted-foreground">Weekly data not available</div></TabsContent>
         </Tabs>
       </CardContent>
     </Card>
