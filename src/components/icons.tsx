@@ -10,15 +10,15 @@ export function ZenBizLogo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="M12 12c-3 0-5 2.5-5 5" />
-      <path d="M12 7c3 0 5 2.5 5 5" />
-      <path d="M12 17a5 5 0 0 0 5-5" />
-      <path d="M7 12a5 5 0 0 0 5 5" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 16V12" />
+      <path d="M12 16V9" />
+      <path d="M16 16V14" />
+      <path d="M8 10L12 7L16 9L18 7.5" />
     </svg>
   );
 }
