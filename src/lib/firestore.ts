@@ -1,6 +1,7 @@
 
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, setDoc } from 'firebase/firestore';
+import { subMonths } from 'date-fns';
 
 // Types
 export type Currency = 'INR' | 'USD' | 'EUR';
@@ -64,7 +65,13 @@ export const updateUserSettings = async (userId: string, settings: Partial<UserS
 
 // Transaction Functions
 export const listenToTransactions = (userId: string, callback: (transactions: Transaction[]) => void): (() => void) => {
-  const q = query(collection(db, 'transactions'), where('userId', '==', userId), orderBy('date', 'desc'));
+  const sixMonthsAgo = subMonths(new Date(), 6);
+  const q = query(
+      collection(db, 'transactions'), 
+      where('userId', '==', userId),
+      where('date', '>=', sixMonthsAgo.toISOString()),
+      orderBy('date', 'desc')
+  );
   return onSnapshot(q, (querySnapshot) => {
     const transactions: Transaction[] = [];
     querySnapshot.forEach((doc) => {

@@ -77,12 +77,17 @@ export default function ReportsPage() {
     const catData = transactions
         .filter(t => new Date(t.date) >= currentMonthStart)
         .reduce((acc, t) => {
-            if (!acc[t.category]) {
-                acc[t.category] = { category: t.category, amount: 0, fill: `var(--color-${t.category})` };
+            const categoryKey = t.category as keyof typeof categoryConfig;
+            if (!acc[categoryKey]) {
+                acc[categoryKey] = { 
+                    category: categoryKey, 
+                    amount: 0, 
+                    fill: `var(--color-${categoryKey})` 
+                };
             }
-            acc[t.category].amount += t.amount;
+            acc[categoryKey].amount += t.amount;
             return acc;
-        }, {} as {[key: string]: any});
+        }, {} as Record<string, { category: string; amount: number; fill: string }>);
 
     return { 
         spendingTrendData: trendData,
@@ -168,7 +173,11 @@ export default function ReportsPage() {
                   nameKey="category"
                   innerRadius={60}
                   strokeWidth={5}
-                />
+                >
+                  {categoryData.map((entry) => (
+                    <RechartsPrimitive.Cell key={`cell-${entry.category}`} fill={entry.fill} />
+                  ))}
+                </Pie>
                  <ChartLegend
                   content={<ChartLegendContent nameKey="category" />}
                   className="-translate-y-[2rem] flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
