@@ -39,18 +39,22 @@ export default function SettingsPage() {
 
   const handleSettingsChange = (key: string, value: any) => {
     if (localSettings) {
+      const newSettings = { ...localSettings };
       const keys = key.split('.');
-      if (keys.length === 1) {
-        setLocalSettings({ ...localSettings, [key]: value });
-      } else {
-        const newSettings = { ...localSettings };
-        let current: any = newSettings;
+      
+      if (keys.length > 1) {
+        // Handle nested properties
+        let currentLevel: any = newSettings;
         for (let i = 0; i < keys.length - 1; i++) {
-            current = current[keys[i]];
+          currentLevel = currentLevel[keys[i]];
         }
-        current[keys[keys.length - 1]] = value;
-        setLocalSettings(newSettings);
+        currentLevel[keys[keys.length - 1]] = value;
+      } else {
+        // Handle top-level properties
+        (newSettings as any)[key] = value;
       }
+      
+      setLocalSettings(newSettings);
     }
   };
 
