@@ -50,7 +50,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Others"];
 
 export default function ExpensesPage() {
-  const { transactions, loading } = useUserData();
+  const { transactions, loading, deleteTransaction } = useUserData();
   const { formatCurrency } = useCurrency();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -97,43 +97,45 @@ export default function ExpensesPage() {
           ) : 
           <>
               {/* Desktop Table */}
-              <Table className="hidden md:table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Merchant</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">{transaction.merchant}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{transaction.category}</Badge>
-                      </TableCell>
-                      <TableCell>{format(new Date(transaction.date), 'PPP')}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(transaction.amount)}
-                      </TableCell>
-                      <TableCell>
-                          <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                      <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                          </DropdownMenu>
-                      </TableCell>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Merchant</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="font-medium">{transaction.merchant}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{transaction.category}</Badge>
+                        </TableCell>
+                        <TableCell>{format(new Date(transaction.date), 'PPP')}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(transaction.amount)}
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)}>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
               {/* Mobile Card List */}
               <div className="md:hidden space-y-4">
                 {transactions.map(transaction => (
