@@ -41,7 +41,7 @@ import { CurrencyProvider } from "@/context/currency-context";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { UserDataProvider } from "@/context/user-data-context";
 
@@ -67,17 +67,19 @@ function ProtectedDashboardLayout({ children }: { children: React.ReactNode }) {
     router.push("/login");
   };
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
+
+
+  if (loading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  }
-
-  if (!user) {
-    router.push("/login");
-    return null;
   }
   
   const getInitials = (email: string | null | undefined) => {
