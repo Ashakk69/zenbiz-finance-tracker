@@ -74,9 +74,18 @@ export function ReceiptScannerCard() {
       return;
     }
     setIsLoading(true);
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), 5000)
+    );
+
     try {
-      const result = await scanReceipt({ photoDataUri });
-      if (result.category && result.amount && result.merchant) {
+      const result = await Promise.race([
+        scanReceipt({ photoDataUri }),
+        timeoutPromise
+      ]);
+
+      if (result && typeof result !== 'undefined' && 'category' in result && result.category && result.amount && result.merchant) {
         const newTransaction = {
           merchant: result.merchant,
           amount: result.amount,
@@ -94,9 +103,17 @@ export function ReceiptScannerCard() {
           description: "Could not extract details from the receipt. Please try again or add manually.",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast({ variant: "destructive", title: "An Error Occurred", description: "Could not process the receipt." });
+      if (error.message === "Timeout") {
+        toast({
+          variant: "destructive",
+          title: "Scan Timed Out",
+          description: "No receipt was detected within 5 seconds. Please try again.",
+        });
+      } else {
+        toast({ variant: "destructive", title: "An Error Occurred", description: "Could not process the receipt." });
+      }
     } finally {
       setIsLoading(false);
     }
