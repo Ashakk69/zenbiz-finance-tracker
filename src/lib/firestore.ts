@@ -1,11 +1,12 @@
 
 import { db } from './firebase';
-import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, setDoc } from 'firebase/firestore';
 
 // Types
 export type Currency = 'INR' | 'USD' | 'EUR';
 
 export interface UserSettings {
+  income: number;
   currency: Currency;
   monthlyBudget: number;
   notifications: {
@@ -28,8 +29,9 @@ export interface Transaction {
 }
 
 const defaultSettings: UserSettings = {
+    income: 0,
     currency: 'INR',
-    monthlyBudget: 50000,
+    monthlyBudget: 0,
     notifications: {
         overspending: true,
         billReminders: true,
@@ -43,21 +45,22 @@ const defaultSettings: UserSettings = {
 // User Settings Functions
 export const listenToUserSettings = (userId: string, callback: (settings: UserSettings | null) => void): (() => void) => {
   const docRef = doc(db, 'users', userId);
-  return onSnapshot(docRef, (docSnap) => {
+  return onSnapshot(docRef, async (docSnap) => {
     if (docSnap.exists()) {
       callback(docSnap.data() as UserSettings);
     } else {
       // Create default settings for new user
-      updateUserSettings(userId, defaultSettings);
+      await setDoc(docRef, defaultSettings);
       callback(defaultSettings);
     }
   });
 };
 
-export const updateUserSettings = async (userId: string, settings: UserSettings): Promise<void> => {
+export const updateUserSettings = async (userId: string, settings: Partial<UserSettings>): Promise<void> => {
   const docRef = doc(db, 'users', userId);
-  await updateDoc(docRef, settings, { merge: true });
+  await updateDoc(docRef, settings);
 };
+
 
 // Transaction Functions
 export const listenToTransactions = (userId: string, callback: (transactions: Transaction[]) => void): (() => void) => {

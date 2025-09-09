@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
 import { BrainCircuit, Loader2 } from "lucide-react";
+import { useUserData } from "@/context/user-data-context";
 
 const formSchema = z.object({
   income: z.coerce.number().min(1, "Please enter your monthly income."),
@@ -30,15 +32,22 @@ export default function AiInsightsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { currency } = useCurrency();
+  const { settings } = useUserData();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      income: 85000,
+      income: 0,
       financialGoals: "Save for a down payment on a house and build an emergency fund.",
       spendingHistory: "High spending on dining out and online shopping. Monthly expenses are around 40k, with 12k on food, 10k on shopping, 5k on transport and 13k on bills and rent.",
     },
   });
+
+  useEffect(() => {
+      if (settings?.income) {
+          form.setValue('income', settings.income);
+      }
+  }, [settings, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -75,7 +84,7 @@ export default function AiInsightsPage() {
                   <FormItem>
                     <FormLabel>Monthly Income ({currency})</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="85000" {...field} />
+                      <Input type="number" placeholder="e.g. 50000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function BalanceCard() {
   const { formatCurrency } = useCurrency();
-  const { transactions, loading } = useUserData();
+  const { transactions, settings, loading } = useUserData();
 
   const { income, expenses, balance, lastMonthPercentage } = useMemo(() => {
     const now = new Date();
@@ -26,7 +26,7 @@ export function BalanceCard() {
         .filter(t => new Date(t.date) >= lastMonthStart && new Date(t.date) <= lastMonthEnd && t.amount > 0)
         .reduce((sum, t) => sum + t.amount, 0);
     
-    const income = 85000;
+    const income = settings?.income ?? 0;
     const balance = income - currentMonthExpenses;
 
     const percentageChange = lastMonthExpenses === 0 
@@ -39,9 +39,9 @@ export function BalanceCard() {
         balance,
         lastMonthPercentage: percentageChange
     }
-  }, [transactions]);
+  }, [transactions, settings]);
   
-  if (loading.transactions) {
+  if (loading.transactions || loading.settings) {
       return (
           <Card>
               <CardHeader>

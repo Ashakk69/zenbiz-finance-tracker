@@ -60,6 +60,7 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (user && settings) {
       const updatedSettings = { ...settings, ...newSettings };
       await updateUserSettings(user.uid, updatedSettings);
+      setSettings(updatedSettings); // Optimistically update local state
     }
   };
   

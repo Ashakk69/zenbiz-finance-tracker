@@ -22,34 +22,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUserData } from "@/context/user-data-context";
-import { Currency } from "@/lib/firestore";
+import { Currency, UserSettings } from "@/lib/firestore";
 import { Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { settings, updateSettings, loading } = useUserData();
+  const [localSettings, setLocalSettings] = useState<UserSettings | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings);
+    }
+  }, [settings]);
 
   const handleSettingsChange = (key: string, value: any) => {
-    if (settings) {
-      const keys = key.split('.');
-      const newSettings = { ...settings };
-      let current: any = newSettings;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      updateSettings(newSettings);
+    if (localSettings) {
+        const keys = key.split('.');
+        const newSettings = { ...localSettings };
+        let current: any = newSettings;
+        for (let i = 0; i < keys.length - 1; i++) {
+            current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
+        setLocalSettings(newSettings);
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your changes have been successfully saved to the cloud.",
-    });
+  const handleSave = async () => {
+    if (localSettings) {
+        await updateSettings(localSettings);
+        toast({
+          title: "Settings Saved",
+          description: "Your changes have been successfully saved.",
+        });
+    }
   };
 
-  if (loading || !settings) {
+  if (loading.settings || !localSettings) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -65,11 +76,11 @@ export default function SettingsPage() {
             <CardTitle>General</CardTitle>
             <CardDescription>Manage your app settings.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
               <Select
-                value={settings.currency}
+                value={localSettings.currency}
                 onValueChange={(value: Currency) => handleSettingsChange('currency', value)}
               >
                 <SelectTrigger id="currency" className="w-[180px]">
@@ -81,6 +92,15 @@ export default function SettingsPage() {
                   <SelectItem value="EUR">EUR (€)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="monthly-income">Monthly Income</Label>
+              <Input
+                id="monthly-income"
+                type="number"
+                value={localSettings.income}
+                onChange={(e) => handleSettingsChange('income', parseInt(e.target.value, 10) || 0)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -98,8 +118,8 @@ export default function SettingsPage() {
               <Input
                 id="monthly-budget"
                 type="number"
-                value={settings.monthlyBudget}
-                onChange={(e) => handleSettingsChange('monthlyBudget', parseInt(e.target.value, 10))}
+                value={localSettings.monthlyBudget}
+                onChange={(e) => handleSettingsChange('monthlyBudget', parseInt(e.target.value, 10) || 0)}
               />
             </div>
             <p className="text-sm text-muted-foreground pt-4">
@@ -123,7 +143,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 id="overspending-alerts"
-                checked={settings.notifications.overspending}
+                checked={localSettings.notifications.overspending}
                 onCheckedChange={(value) => handleSettingsChange('notifications.overspending', value)}
               />
             </div>
@@ -136,7 +156,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 id="bill-reminders"
-                checked={settings.notifications.billReminders}
+                checked={localSettings.notifications.billReminders}
                 onCheckedChange={(value) => handleSettingsChange('notifications.billReminders', value)}
               />
             </div>
@@ -149,7 +169,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 id="income-deposits"
-                checked={settings.notifications.incomeDeposits}
+                checked={localSettings.notifications.incomeDeposits}
                 onCheckedChange={(value) => handleSettingsChange('notifications.incomeDeposits', value)}
               />
             </div>
