@@ -7,22 +7,11 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserData } from "@/context/user-data-context";
-import { AlertTriangle, Bell, Loader2 } from "lucide-react";
+import { AlertTriangle, Bell } from "lucide-react";
 import { ReceiptScannerCard } from "@/components/dashboard/receipt-scanner-card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
-  const { settings, loading } = useUserData();
-
-  if (loading.settings) {
-    return (
-      <div className="grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4">
-         <Skeleton className="lg:col-span-2 h-[220px]" />
-         <Skeleton className="lg:col-span-2 h-[220px]" />
-         <Skeleton className="lg:col-span-4 h-[400px]" />
-      </div>
-    );
-  }
+  const { settings } = useUserData();
 
   return (
     <div className="grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4">

@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const profileSchema = z.object({
   displayName: z.string().min(2, "Name must be at least 2 characters."),
@@ -39,8 +40,8 @@ export default function ProfilePage() {
   } = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      displayName: user?.displayName ?? "",
-      email: user?.email ?? "",
+      displayName: "",
+      email: "",
     },
   });
 
@@ -78,11 +79,35 @@ export default function ProfilePage() {
     }
   };
   
-  if (authLoading) {
+  if (authLoading || !user) {
      return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+        <div className="max-w-3xl mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Profile</CardTitle>
+                    <CardDescription>
+                        Manage your public profile and account details.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex items-center space-x-4">
+                        <Skeleton className="h-20 w-20 rounded-full" />
+                        <Skeleton className="h-10 w-28" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="displayName">Display Name</Label>
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                </CardContent>
+                <CardFooter className="border-t px-6 py-4">
+                   <Skeleton className="h-10 w-32" />
+                </CardFooter>
+            </Card>
+        </div>
     );
   }
 
