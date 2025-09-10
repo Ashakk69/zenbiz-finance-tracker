@@ -15,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
 import { useUserData } from "@/context/user-data-context";
-import { scanReceipt } from "@/ai/flows/scan-receipt-flow";
+import { scanReceipt, ScanReceiptOutput } from "@/ai/flows/scan-receipt-flow";
 
 const categories = ["Food", "Transport", "Bills", "Shopping", "Entertainment", "Health", "Others"];
 
@@ -75,17 +75,24 @@ export function ReceiptScannerCard() {
     }
     setIsLoading(true);
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), 5000)
-    );
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Scan Timed Out",
+        description: "No receipt was detected within 5 seconds. Please try again.",
+      });
+    }, 5000);
+
 
     try {
-      const result = await Promise.race([
-        scanReceipt({ photoDataUri }),
-        timeoutPromise
-      ]);
+      const result = await scanReceipt({ photoDataUri });
+      clearTimeout(timeout);
+      if (timedOut) return;
 
-      if (result && typeof result !== 'undefined' && 'category' in result && result.category && result.amount && result.merchant) {
+      if (result && result.category && result.amount && result.merchant) {
         const newTransaction = {
           merchant: result.merchant,
           amount: result.amount,
@@ -104,18 +111,14 @@ export function ReceiptScannerCard() {
         });
       }
     } catch (error: any) {
+      clearTimeout(timeout);
+      if (timedOut) return;
       console.error(error);
-      if (error.message === "Timeout") {
-        toast({
-          variant: "destructive",
-          title: "Scan Timed Out",
-          description: "No receipt was detected within 5 seconds. Please try again.",
-        });
-      } else {
-        toast({ variant: "destructive", title: "An Error Occurred", description: "Could not process the receipt." });
-      }
+      toast({ variant: "destructive", title: "An Error Occurred", description: "Could not process the receipt." });
     } finally {
-      setIsLoading(false);
+      if(!timedOut){
+        setIsLoading(false);
+      }
     }
   };
 
